@@ -40,6 +40,7 @@ typedef struct {
 } GUI_LocalButton_t;
 
 void GUI_Text( uint16_t x, uint16_t y, uint16_t color, uint16_t bkColor, char *format, ... );
+void GUI_DrawFrame( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t ySize, uint16_t frameColor );
 void GUI_MenuButton( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t ySize, uint16_t frameColor, uint16_t textColor, uint16_t bkColor, GUI_StateMachine_t nextState, char *format, ... );
 void GUI_LocalButton( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t ySize, uint16_t frameColor, uint16_t textColor, uint16_t bkColor, uint8_t arg, char *format, ... );
 void GUI_ClearButtons();

@@ -125,6 +125,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 
 void CheckDefaults();
+void ApplyDefaults();
 void RestoreSettings();
 
 uint16_t GetPeriod();

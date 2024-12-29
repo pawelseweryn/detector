@@ -63,6 +63,18 @@ void GUI_Text( uint16_t x, uint16_t y, uint16_t color, uint16_t bkColor, char *f
   va_end( args );
 
   LCD_Text( x, y, buffer, color, bkColor );
+
+  return;
+}
+
+void GUI_DrawFrame( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t ySize, uint16_t frameColor )
+{
+  LCD_DrawLine( xStart, yStart, (xStart + xSize), yStart, frameColor );   /* TOP FRAME */
+  LCD_DrawLine( xStart, (yStart + ySize), (xStart + xSize), (yStart + ySize), frameColor );   /* BOTTOM FRAME */
+  LCD_DrawLine( xStart, yStart, xStart, (yStart + ySize), frameColor );   /* LEFT FRAME */
+  LCD_DrawLine( (xStart + xSize), yStart, (xStart + xSize), (yStart + ySize), frameColor );   /* RIGHT FRAME */
+
+  return;
 }
 
 void GUI_MenuButton( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t ySize, uint16_t frameColor, uint16_t textColor, uint16_t bkColor, GUI_StateMachine_t nextState, char *format, ... )
@@ -74,10 +86,7 @@ void GUI_MenuButton( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t 
   if(ButtonsMenuAmount < BUTTONS_MENU_MAX)
   {
     /* Frame */
-    LCD_DrawLine( xStart, yStart, (xStart + xSize), yStart, frameColor );   /* TOP FRAME */
-    LCD_DrawLine( xStart, (yStart + ySize), (xStart + xSize), (yStart + ySize), frameColor );   /* BOTTOM FRAME */
-    LCD_DrawLine( xStart, yStart, xStart, (yStart + ySize), frameColor );   /* LEFT FRAME */
-    LCD_DrawLine( (xStart + xSize), yStart, (xStart + xSize), (yStart + ySize), frameColor );   /* RIGHT FRAME */
+    GUI_DrawFrame( xStart, yStart, xSize, ySize, frameColor );
 
     /* Text */
     memset( buffer, 0, BUFFER_SIZE * sizeof(char) );
@@ -112,10 +121,7 @@ void GUI_LocalButton( uint16_t xStart, uint16_t yStart, uint16_t xSize, uint16_t
   if(ButtonsLocalAmount < BUTTONS_LOCAL_MAX)
   {
     /* Frame */
-    LCD_DrawLine( xStart, yStart, (xStart + xSize), yStart, frameColor );   /* TOP FRAME */
-    LCD_DrawLine( xStart, (yStart + ySize), (xStart + xSize), (yStart + ySize), frameColor );   /* BOTTOM FRAME */
-    LCD_DrawLine( xStart, yStart, xStart, (yStart + ySize), frameColor );   /* LEFT FRAME */
-    LCD_DrawLine( (xStart + xSize), yStart, (xStart + xSize), (yStart + ySize), frameColor );   /* RIGHT FRAME */
+    GUI_DrawFrame( xStart, yStart, xSize, ySize, frameColor );
 
     /* Text */
     memset( buffer, 0, BUFFER_SIZE * sizeof(char) );
@@ -799,25 +805,25 @@ void GUI_SetSensors_4()
     } else {
       switch( argument )
       {
-        case 9: /* Scroff++ */
+        case 0xAA: /* Scroff++ */
           if( GetScrOff() < SCROFF_MAX )
           {
             SetScrOff( GetScrOff() + SCROFF_STEP );
           }
           break;
-        case 10: /* Scroff-- */
+        case 0xAB: /* Scroff-- */
           if( GetScrOff() > SCROFF_MIN )
           {
             SetScrOff( GetScrOff() - SCROFF_STEP );
           }
           break;
-        case 11: /* Period++ */
+        case 0xAC: /* Period++ */
           if( GetPeriod() < PERIOD_MAX )
           {
             SetPeriod( GetPeriod() + PERIOD_STEP );
           }
           break;
-        case 12: /* Period-- */
+        case 0xAD: /* Period-- */
           if( GetPeriod() > PERIOD_MIN )
           {
             SetPeriod( GetPeriod() - PERIOD_STEP );
@@ -835,19 +841,26 @@ void GUI_SetSensors_4()
   GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "RHL W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH1, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "RHH W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "RHH C:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_CRITICAL ) );
-  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.1f", ((double) GetScrOff()) / 1000 );
+  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.0f", ((double) GetScrOff()) / 1000 );
   GUI_Text( MARGIN_LEFT, (13 * FONT_HEIGHT + MARGIN_TOP) + 25, White, Black, "Period:  %4.1f", ((double) GetPeriod()) / 1000 );
 
   if( StateHasChanged )
   {
-    GUI_LocalButton( 140, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0x10 | SENSORS_TYPE_RH1), "+" );
-    GUI_LocalButton( 190, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0x20 | SENSORS_TYPE_RH1), "-" );
-    GUI_LocalButton( 140, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0x30 | SENSORS_TYPE_RH1), "+" );
-    GUI_LocalButton( 190, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0x40 | SENSORS_TYPE_RH1), "-" );
-    GUI_LocalButton( 140, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0x30 | SENSORS_TYPE_RH2), "+" );
-    GUI_LocalButton( 190, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0x40 | SENSORS_TYPE_RH2), "-" );
-    GUI_LocalButton( 140, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0x10 | SENSORS_TYPE_RH2), "+" );
-    GUI_LocalButton( 190, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0x20 | SENSORS_TYPE_RH2), "-" );
+    /* Argument - 0xYZ, where Y is:
+     * 1 - add warning
+     * 2 - sub warning
+     * 3 - add critical
+     * 4 - sub critical
+     * Z is number of sensor */
+
+    GUI_LocalButton( 140, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0x30 | SENSORS_TYPE_RH1), "+" );
+    GUI_LocalButton( 190, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0x40 | SENSORS_TYPE_RH1), "-" );
+    GUI_LocalButton( 140, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0x10 | SENSORS_TYPE_RH1), "+" );
+    GUI_LocalButton( 190, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0x20 | SENSORS_TYPE_RH1), "-" );
+    GUI_LocalButton( 140, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0x10 | SENSORS_TYPE_RH2), "+" );
+    GUI_LocalButton( 190, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0x20 | SENSORS_TYPE_RH2), "-" );
+    GUI_LocalButton( 140, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0x30 | SENSORS_TYPE_RH2), "+" );
+    GUI_LocalButton( 190, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0x40 | SENSORS_TYPE_RH2), "-" );
     GUI_LocalButton( 140, (10.5 * FONT_HEIGHT + MARGIN_TOP) + 20, 40, 2 * FONT_HEIGHT, White, White, Black, (0xAA), "+" );
     GUI_LocalButton( 190, (10.5 * FONT_HEIGHT + MARGIN_TOP) + 20, 40, 2 * FONT_HEIGHT, White, White, Black, (0xAB), "-" );
     GUI_LocalButton( 140, (12.5 * FONT_HEIGHT + MARGIN_TOP) + 25, 40, 2 * FONT_HEIGHT, White, White, Black, (0xAC), "+" );
@@ -864,10 +877,43 @@ void GUI_SetSensors_4()
 
 void GUI_SetSensors_5()
 {
+  if( argument > 0 )
+  {
+    switch( argument )
+    {
+      case 1:
+        GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Yellow );
+        if( Sensors_SEN55_CleanFan() )
+        {
+          GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Green );
+        } else {
+          GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Red );
+        }
+        break;
+      case 2:
+        GUI_DrawFrame( 119, (MARGIN_TOP + 20), 120, 50, Yellow );
+        if( Sensors_SCD41_PerformCalibration() )
+        {
+          GUI_DrawFrame( 119, (MARGIN_TOP + 20), 120, 50, Green );
+        } else {
+          GUI_DrawFrame( 119, (MARGIN_TOP + 20), 120, 50, Red );
+        }
+        break;
+      case 3:
+        GUI_DrawFrame( 0, (MARGIN_TOP + 80), 119, 50, Yellow );
+        ApplyDefaults();
+        GUI_DrawFrame( 0, (MARGIN_TOP + 80), 119, 50, Green );
+        break;
+    }
+  }
+
+  argument = 0;
+
   if( StateHasChanged )
   {
     GUI_LocalButton( 0, (MARGIN_TOP + 20), 119, 50, White, White, Black, 1, "Clean fan" );
     GUI_LocalButton( 119, (MARGIN_TOP + 20), 120, 50, White, White, Black, 2, "Calibrate CO2" );
+    GUI_LocalButton( 0, (MARGIN_TOP + 80), 119, 50, White, White, Black, 3, "Defaults" );
 
     /* Menu */
     GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_SetSensors_1, "Sensors" );

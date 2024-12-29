@@ -29,9 +29,10 @@ const bool MessageSourceRecord[Message_SourceLast] = {
     false,  /* Message_SEN55_CleanFan */
     false,  /* Message_SCD41_Init */
     false,  /* Message_SCD41_Start */
-    false,  /* Message_SCD41_Stop */
+    true,   /* Message_SCD41_Stop */
     false,  /* Message_SCD41_Read */
     false,  /* Message_SCD41_DataReady */
+    true,   /* Message_SCD41_PerformCal */
     true,   /* Message_TouchPanel */
     true,   /* Message_LCD */
     true    /* Message_GUI */
@@ -50,6 +51,7 @@ const char *MessageNames[] = {
   "SCD41 (Stop)",
   "SCD41 (Read)",
   "SCD41 (DataReady)",
+  "SCD41 (PerformCal)",
   "TouchPanel",
   "LCD"
 };

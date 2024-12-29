@@ -32,6 +32,7 @@ enum {
   Message_SCD41_Stop,
   Message_SCD41_Read,
   Message_SCD41_DataReady,
+  Message_SCD41_PerformCal,
   Message_TouchPanel,
   Message_LCD,
   Message_GUI,

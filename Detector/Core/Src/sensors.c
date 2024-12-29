@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "sensors.h"
 #include "main.h"
@@ -565,9 +566,9 @@ bool Sensors_SCD41_Read()
   {
     Message( Message_SCD41_DataReady, Message_Debug, "Data not ready" );
     return true;
+  } else {
+    Message( Message_SCD41_DataReady, Message_Debug, "Data ready" );
   }
-
-  Message( Message_SCD41_DataReady, Message_Debug, "Data ready" );
 
   Message( Message_SCD41_Read, Message_Debug, "Issued" );
 
@@ -620,7 +621,67 @@ bool Sensors_SCD41_Read()
 
 bool Sensors_SCD41_PerformCalibration()
 {
-  return false;
+  uint16_t command;
+  HAL_StatusTypeDef status;
+  uint8_t data[5];
+  uint16_t word;
+
+  if( !Sensors_SCD41_Stop() )
+  {
+    return false;
+  }
+
+  command = SCD41_CMD_PERFORMCAL;
+
+  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
+  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
+  data[2] = 0x01; /* 400 ppm */
+  data[3] = 0x90;
+  data[4] = Sensors_CalcCrc( &data[2], 2 );
+
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SCD41_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+
+  if( status != HAL_OK )
+  {
+    Message( Message_SCD41_PerformCal, Message_Error, "FAILED (no communication)" );
+    return false;
+  }
+
+  memset( data, 0x00, sizeof(uint8_t) * 5 );
+
+  HAL_Delay( SCD41_TIME_PERFORMCAL );
+
+  status = HAL_I2C_Master_Receive( &hi2c2, (SCD41_ADDRESS << 1), data, 3, 100 );
+  if( status != HAL_OK )
+  {
+    Message( Message_SCD41_PerformCal, Message_Error, "FAILED (no response)" );
+    return false;
+  }
+
+  /* Check CRC */
+  if( !Sensors_CompareCrc(&data[0], 2, data[2]) )
+  {
+    Message( Message_SCD41_PerformCal, Message_Error, "FAILED (CRC error)" );
+    return false;
+  }
+
+  word = (uint16_t) ((data[0] << 8) | data[1]);
+
+  /* Check if success */
+  if( word == 0xFFFF )
+  {
+    Message( Message_SCD41_PerformCal, Message_Debug, "Calibration failed" );
+    return false;
+  }
+
+  Message( Message_SCD41_PerformCal, Message_Error, "Calibration OK" );
+
+  if( !Sensors_SCD41_Start() )
+  {
+    return false;
+  }
+
+  return true;
 }
 
 inline double Sensors_GetValue( Sensors_Type_t type, Sensors_Level_t level )

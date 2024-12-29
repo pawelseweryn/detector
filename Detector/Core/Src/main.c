@@ -106,54 +106,63 @@ void CheckDefaults()
   {
     Message(Message_Main, Message_Information, "No defaults found in backup registers. Restoring defaults");
 
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, 0x28 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, 0x12 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, 0x24 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X1, 635 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y1, 933 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X2, 3132 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y2, 852 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X3, 2356 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y3, 3261 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2), 10 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1, 35 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2), 15 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1, 55 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2), 15 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1, 55 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2), 45 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1, 100 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2), 1200 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1, 2000 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2), 150 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1, 250 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2), 20 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1, 150 );
-
-    /* For temperature and humidity TEMP1/RH1 is for lower than, TEMP2/RH2 is for higher than */
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1, 10 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2), 15 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2), 27 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1, 30 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1, 30 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2), 40 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2), 60 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1, 70 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 10000 );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, 500 );
-
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_INIT, BKP_REG_INITVALUE );
+    ApplyDefaults();
   }
+
+  return;
+}
+
+void ApplyDefaults()
+{
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, 0x28 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, 0x12 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, 0x24 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X1, 635 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y1, 933 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X2, 3132 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y2, 852 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X3, 2356 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y3, 3261 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2), 10 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1, 35 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2), 15 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1, 55 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2), 15 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1, 55 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2), 45 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1, 100 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2), 1200 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1, 2000 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2), 150 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1, 250 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2), 20 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1, 150 );
+
+  /* For temperature and humidity TEMP1/RH1 is for lower than, TEMP2/RH2 is for higher than */
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1, 10 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2), 15 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2), 27 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1, 30 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1, 30 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2), 40 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2), 60 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1, 70 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 10000 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, 500 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_INIT, BKP_REG_INITVALUE );
+
+  return;
 }
 
 void RestoreSettings()
