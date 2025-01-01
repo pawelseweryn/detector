@@ -220,8 +220,8 @@ void GUI_Main()
   {
     /* Menu */
     GUI_MenuButton( 0, 220, 119, 50, White, White, Black, GUI_State_SetSensors_1, "Sensors" );
-    GUI_MenuButton( 119, 220, 120, 50, White, White, Black, GUI_State_SetTime, "Time" );
-    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_CalibrateTP, "Touchpanel" );
+    GUI_MenuButton( 119, 220, 120, 50, White, White, Black, GUI_State_SetTime, "Screen" );
+    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_NewFile, "New file" );
     GUI_MenuButton( 119, 270, 120, 49, White, White, Black, GUI_State_SetSDCard, "SD card" );
   }
 
@@ -252,6 +252,10 @@ uint8_t GUI_IsLeapYear( uint16_t nYear )
   }
 }
 
+void GUI_NewFile()
+{
+
+}
 
 void GUI_SetTime()
 {
@@ -472,6 +476,7 @@ void GUI_SetTime()
 
     /* Menu */
     GUI_MenuButton( 119, 270, 120, 49, White, White, Black, GUI_State_Main, "Main" );
+    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_CalibrateTP, "Touchpanel" );
   }
 
   StateHasChanged = false;
@@ -881,6 +886,138 @@ void GUI_SetSensors_5()
   {
     switch( argument )
     {
+      case 0xAA: /* SEN55 temperature offset ++ */
+        if( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ) < Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_MAX ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ) + Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xAB: /* SEN55 temperature offset -- */
+        if( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ) > Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_MIN ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ) - Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xBA: /* SEN55 temperature slope ++ */
+        if( Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ) < Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_MAX ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ) + Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xBB: /* SEN55 temperature slope -- */
+        if( Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ) > Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_MIN ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ) - Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xCA: /* SEN55 temperature time ++ */
+        if( Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ) < Sensors_SEN55_GetTempTime( SENSORS_LEVEL_MAX ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ) + Sensors_SEN55_GetTempTime( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xCB: /* SEN55 temperature time -- */
+        if( Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ) > Sensors_SEN55_GetTempTime( SENSORS_LEVEL_MIN ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ) - Sensors_SEN55_GetTempTime( SENSORS_LEVEL_STEP ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ));
+        }
+        break;
+      case 0xDA: /* SEN55 temperature acceleration ++ */
+        if( Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ) < Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_MAX ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ) + Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_STEP ));
+        }
+        break;
+      case 0xDB: /* SEN55 temperature acceleration -- */
+        if( Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ) > Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_MIN ) )
+        {
+          Sensors_SEN55_SetTempOffset( Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ),
+                                       Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ) - Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_STEP ));
+        }
+        break;
+      case 0xEA: /* SCD41 temperature slope ++ */
+        if( Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_ACTUAL ) < Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_MAX ) )
+        {
+          Sensors_SCD41_SetTempOffset( Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_ACTUAL ) + Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_STEP ));
+        }
+        break;
+      case 0xEB: /* SCD41 temperature slope -- */
+        if( Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_ACTUAL ) > Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_MIN ) )
+        {
+          Sensors_SCD41_SetTempOffset( Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_ACTUAL ) - Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_STEP ));
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  argument = 0;
+
+  GUI_Text( MARGIN_LEFT, (3 * FONT_HEIGHT + MARGIN_TOP), White, Black,       "T1_OFST: %4.1f", Sensors_SEN55_GetTempOffset( SENSORS_LEVEL_ACTUAL ) );
+  GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "T1_SLOP: %4.1f", Sensors_SEN55_GetTempSlope( SENSORS_LEVEL_ACTUAL ) );
+  GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "T1_TIME: %4u", Sensors_SEN55_GetTempTime( SENSORS_LEVEL_ACTUAL ) );
+  GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "T1_ACC:  %4u", Sensors_SEN55_GetTempAccel( SENSORS_LEVEL_ACTUAL ) );
+  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "T2_OFST: %4.1f", Sensors_SCD41_GetTempOffset( SENSORS_LEVEL_ACTUAL ) );
+
+  if( StateHasChanged )
+  {
+    /* Argument - 0xYZ, where Y is:
+     * 1 - add warning
+     * 2 - sub warning
+     * 3 - add critical
+     * 4 - sub critical
+     * Z is number of sensor */
+
+    GUI_LocalButton( 140, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0xAA), "+" );
+    GUI_LocalButton( 190, (2.5 * FONT_HEIGHT + MARGIN_TOP), 40, 2 * FONT_HEIGHT, White, White, Black, (0xAB), "-" );
+    GUI_LocalButton( 140, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0xBA), "+" );
+    GUI_LocalButton( 190, (4.5 * FONT_HEIGHT + MARGIN_TOP) + 5, 40, 2 * FONT_HEIGHT, White, White, Black, (0xBB), "-" );
+    GUI_LocalButton( 140, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0xCA), "+" );
+    GUI_LocalButton( 190, (6.5 * FONT_HEIGHT + MARGIN_TOP) + 10, 40, 2 * FONT_HEIGHT, White, White, Black, (0xCB), "-" );
+    GUI_LocalButton( 140, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0xDA), "+" );
+    GUI_LocalButton( 190, (8.5 * FONT_HEIGHT + MARGIN_TOP) + 15, 40, 2 * FONT_HEIGHT, White, White, Black, (0xDB), "-" );
+    GUI_LocalButton( 140, (10.5 * FONT_HEIGHT + MARGIN_TOP) + 20, 40, 2 * FONT_HEIGHT, White, White, Black, (0xEA), "+" );
+    GUI_LocalButton( 190, (10.5 * FONT_HEIGHT + MARGIN_TOP) + 20, 40, 2 * FONT_HEIGHT, White, White, Black, (0xEB), "-" );
+
+    /* Menu */
+    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_SetSensors_6, "Next" );
+    GUI_MenuButton( 119, 270, 120, 49, White, White, Black, GUI_State_Main, "Main" );
+
+  }
+
+  StateHasChanged = false;
+}
+
+void GUI_SetSensors_6()
+{
+  if( argument > 0 )
+  {
+    switch( argument )
+    {
       case 1:
         GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Yellow );
         if( Sensors_SEN55_CleanFan() )
@@ -900,9 +1037,9 @@ void GUI_SetSensors_5()
         }
         break;
       case 3:
-        GUI_DrawFrame( 0, (MARGIN_TOP + 80), 119, 50, Yellow );
+        GUI_DrawFrame( 0, (MARGIN_TOP + 70), 119, 50, Yellow );
         ApplyDefaults();
-        GUI_DrawFrame( 0, (MARGIN_TOP + 80), 119, 50, Green );
+        GUI_DrawFrame( 0, (MARGIN_TOP + 70), 119, 50, Green );
         break;
     }
   }
@@ -913,7 +1050,7 @@ void GUI_SetSensors_5()
   {
     GUI_LocalButton( 0, (MARGIN_TOP + 20), 119, 50, White, White, Black, 1, "Clean fan" );
     GUI_LocalButton( 119, (MARGIN_TOP + 20), 120, 50, White, White, Black, 2, "Calibrate CO2" );
-    GUI_LocalButton( 0, (MARGIN_TOP + 80), 119, 50, White, White, Black, 3, "Defaults" );
+    GUI_LocalButton( 0, (MARGIN_TOP + 70), 119, 50, White, White, Black, 3, "Defaults" );
 
     /* Menu */
     GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_SetSensors_1, "Sensors" );
@@ -1048,6 +1185,14 @@ void GUI_Handle()
       break;
     case GUI_State_SetSensors_5:
       GUI_SetSensors_5();
+      break;
+    case GUI_State_SetSensors_6:
+      GUI_SetSensors_6();
+      break;
+    case GUI_State_NewFile:
+      GUI_NewFile();
+      StateActual = GUI_State_Main;
+      StateHasChanged = true;
       break;
     case GUI_State_CalibrateTP:
       GUI_CalibrateTP();

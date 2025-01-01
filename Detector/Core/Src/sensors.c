@@ -20,6 +20,9 @@ static double values[11][6];
 extern RTC_HandleTypeDef hrtc;
 extern I2C_HandleTypeDef hi2c2;
 
+double TEMP1_Offset[4], TEMP1_Slope[4], TEMP2_Offset[4];
+uint16_t TEMP1_Time[4], TEMP1_Accel[4];
+
 uint8_t Sensors_CalcCrc( uint8_t *data, uint16_t count )
 {
   uint16_t current_byte;
@@ -139,6 +142,34 @@ void Sensors_RecallValues()
   values[SENSORS_TYPE_RH2][SENSORS_LEVEL_MAX] = 90;
   values[SENSORS_TYPE_RH2][SENSORS_LEVEL_MIN] = 50;
   values[SENSORS_TYPE_RH2][SENSORS_LEVEL_STEP] = 5;
+
+  TEMP1_Offset[SENSORS_LEVEL_ACTUAL] = ((double) ((int16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1OFST))) / 10;
+  TEMP1_Offset[SENSORS_LEVEL_MAX] = 10;
+  TEMP1_Offset[SENSORS_LEVEL_MIN] = -10;
+  TEMP1_Offset[SENSORS_LEVEL_STEP] = 0.1;
+
+  TEMP1_Slope[SENSORS_LEVEL_ACTUAL] = ((double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1SLOPE)) / 10;
+  TEMP1_Slope[SENSORS_LEVEL_MAX] = 5;
+  TEMP1_Slope[SENSORS_LEVEL_MIN] = -5;
+  TEMP1_Slope[SENSORS_LEVEL_STEP] = 0.1;
+
+  TEMP1_Time[SENSORS_LEVEL_ACTUAL] = (uint16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1TIME);
+  TEMP1_Time[SENSORS_LEVEL_MAX] = 100;
+  TEMP1_Time[SENSORS_LEVEL_MIN] = 0;
+  TEMP1_Time[SENSORS_LEVEL_STEP] = 1;
+
+  TEMP1_Accel[SENSORS_LEVEL_ACTUAL] = (uint16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1ACCEL);
+  TEMP1_Accel[SENSORS_LEVEL_MAX] = 2;
+  TEMP1_Accel[SENSORS_LEVEL_MIN] = 0;
+  TEMP1_Accel[SENSORS_LEVEL_STEP] = 1;
+
+  TEMP2_Offset[SENSORS_LEVEL_ACTUAL] = ((double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP2OFST)) / 10;
+  TEMP2_Offset[SENSORS_LEVEL_MAX] = 10;
+  TEMP2_Offset[SENSORS_LEVEL_MIN] = -10;
+  TEMP2_Offset[SENSORS_LEVEL_STEP] = 0.1;
+
+  Sensors_SEN55_SetTempOffset(TEMP1_Offset[SENSORS_LEVEL_ACTUAL], TEMP1_Slope[SENSORS_LEVEL_ACTUAL], TEMP1_Time[SENSORS_LEVEL_ACTUAL], TEMP1_Accel[SENSORS_LEVEL_ACTUAL]);
+  Sensors_SCD41_SetTempOffset(TEMP2_Offset[SENSORS_LEVEL_ACTUAL]);
 
 }
 
@@ -415,6 +446,130 @@ bool Sensors_SEN55_CleanFan()
   return true;
 }
 
+bool Sensors_SEN55_SetTempOffset(double offset, double slope, uint16_t time, uint8_t acceleration)
+{
+  uint16_t command;
+  HAL_StatusTypeDef status;
+  uint8_t data[11];
+  int16_t word;
+  double calc;
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) offset * 10) );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1SLOPE, (uint16_t) ((double) slope * 10) );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1TIME, time );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1ACCEL, acceleration );
+
+  TEMP1_Offset[ SENSORS_LEVEL_ACTUAL ] = offset;
+  TEMP1_Slope[ SENSORS_LEVEL_ACTUAL ] = slope;
+  TEMP1_Time[ SENSORS_LEVEL_ACTUAL ] = time;
+  TEMP1_Accel[ SENSORS_LEVEL_ACTUAL ] = acceleration;
+
+  if( !Sensors_SEN55_Stop() )
+  {
+    return false;
+  }
+
+  command = SEN55_CMD_SETTEMPOFST;
+
+  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
+  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
+
+  calc = offset * 200;
+  word = (int16_t) calc;
+  data[2] = (uint8_t) (((int16_t) word & 0xFF00) >> 8);
+  data[3] = (uint8_t) (((int16_t) word & 0x00FF));
+  data[4] = Sensors_CalcCrc( &data[2], 2 );
+
+  calc = slope * 10000;
+  word = (int16_t) calc;
+  data[5] = (uint8_t) (((int16_t) word & 0xFF00) >> 8);
+  data[6] = (uint8_t) (((int16_t) word & 0x00FF));
+  data[7] = Sensors_CalcCrc( &data[5], 2 );
+
+  data[8] = (uint8_t) (((uint16_t) time & 0xFF00) >> 8);
+  data[9] = (uint8_t) (((uint16_t) time & 0x00FF));
+  data[10] = Sensors_CalcCrc( &data[8], 2 );
+
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+
+  if( status != HAL_OK )
+  {
+    Message( Message_SEN55_SetTempOffset, Message_Error, "FAILED (no communication)" );
+    return false;
+  }
+
+  HAL_Delay( SEN55_TIME_SETTEMPOFST );
+
+  Message( Message_SEN55_SetTempOffset, Message_Debug, "Offset set to: %.1f, slope to: %.1f, time to: %u", offset, slope, time );
+
+  memset( data, 0x00, sizeof(uint8_t) * 11);
+
+  command = SEN55_CMD_SETACCEL;
+
+  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
+  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
+
+  data[2] = (uint8_t) (((int16_t) acceleration & 0xFF00) >> 8);
+  data[3] = (uint8_t) (((int16_t) acceleration & 0x00FF));
+  data[4] = Sensors_CalcCrc( &data[2], 2 );
+
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+
+  if( status != HAL_OK )
+  {
+    Message( Message_SEN55_SetTempOffset, Message_Error, "FAILED (no communication)" );
+    return false;
+  }
+
+  HAL_Delay( SEN55_TIME_SETTEMPOFST );
+
+  if( !Sensors_SEN55_Start() )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+inline double Sensors_SEN55_GetTempOffset( Sensors_Level_t level )
+{
+  if( level <= SENSORS_LEVEL_STEP )
+  {
+    return TEMP1_Offset[level];
+  } else {
+    return 0;
+  }
+}
+
+inline double Sensors_SEN55_GetTempSlope( Sensors_Level_t level )
+{
+  if( level <= SENSORS_LEVEL_STEP )
+  {
+    return TEMP1_Slope[level];
+  } else {
+    return 0;
+  }
+}
+
+inline uint16_t Sensors_SEN55_GetTempTime( Sensors_Level_t level )
+{
+  if( level <= SENSORS_LEVEL_STEP )
+  {
+    return TEMP1_Time[level];
+  } else {
+    return 0;
+  }
+}
+
+inline uint16_t Sensors_SEN55_GetTempAccel( Sensors_Level_t level )
+{
+  if( level <= SENSORS_LEVEL_STEP )
+  {
+    return TEMP1_Accel[level];
+  } else {
+    return 0;
+  }
+}
 
 bool Sensors_SCD41_Init()
 {
@@ -682,6 +837,63 @@ bool Sensors_SCD41_PerformCalibration()
   }
 
   return true;
+}
+
+bool Sensors_SCD41_SetTempOffset( double offset )
+{
+  uint16_t command;
+  HAL_StatusTypeDef status;
+  uint8_t data[5];
+  uint16_t word;
+  double calc;
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP2OFST, (uint16_t) ((double) offset * 10) );
+  TEMP2_Offset[ SENSORS_LEVEL_ACTUAL ] = offset;
+
+  if( !Sensors_SCD41_Stop() )
+  {
+    return false;
+  }
+
+  command = SCD41_CMD_SETTEMPOFST;
+
+  calc = 65535 / 175 * offset;
+  word = (uint16_t) calc;
+
+  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
+  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
+  data[2] = (uint8_t) (((uint16_t) word & 0xFF00) >> 8);
+  data[3] = (uint8_t) (((uint16_t) word & 0x00FF));
+  data[4] = Sensors_CalcCrc( &data[2], 2 );
+
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SCD41_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+
+  if( status != HAL_OK )
+  {
+    Message( Message_SCD41_SetTempOffset, Message_Error, "FAILED (no communication)" );
+    return false;
+  }
+
+  HAL_Delay( SCD41_TIME_SETTEMPOFST );
+
+  Message( Message_SCD41_SetTempOffset, Message_Debug, "Offset set to: %.1f", offset );
+
+  if( !Sensors_SCD41_Start() )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+inline double Sensors_SCD41_GetTempOffset( Sensors_Level_t level )
+{
+  if( level <= SENSORS_LEVEL_STEP )
+  {
+    return TEMP2_Offset[level];
+  } else {
+    return 0;
+  }
 }
 
 inline double Sensors_GetValue( Sensors_Type_t type, Sensors_Level_t level )

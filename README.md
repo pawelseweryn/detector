@@ -31,11 +31,11 @@ Status:
 - GUI done
 - GUI - Time - done
 - GUI - Touchpanel - done
-- GUI - Sensors - in progress
+- GUI - Sensors - done
 - GUI - SD card - in progress
+- CO2 sensor calibration command done
 
 TODO:
 - Sensors errors handling
-- CO2 sensor calibration command
 - SD card handling
 - USB/UART handling

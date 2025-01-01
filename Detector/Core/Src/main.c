@@ -78,9 +78,9 @@ static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USB_PCD_Init(void);
 static void MX_FSMC_Init(void);
-static void MX_SDIO_SD_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_RTC_Init(void);
+static void MX_SDIO_SD_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -159,6 +159,12 @@ void ApplyDefaults()
 
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 10000 );
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, 500 );
+
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) -7.2 * 10) );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1SLOPE, (uint16_t) ((double) 0) );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1TIME, 0 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1ACCEL, 1 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP2OFST, (uint16_t) ((double) 7.2 * 10) );
 
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_INIT, BKP_REG_INITVALUE );
 
@@ -244,11 +250,10 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   MX_FSMC_Init();
-  MX_SDIO_SD_Init();
   MX_I2C2_Init();
   MX_RTC_Init();
+  MX_SDIO_SD_Init();
   MX_FATFS_Init();
-
   /* USER CODE BEGIN 2 */
 
   CheckDefaults();
@@ -296,6 +301,7 @@ int main(void)
     GUI_HandleButton();
 
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
     HAL_Delay( 1 );
     if(tick < period)
@@ -417,7 +423,7 @@ static void MX_RTC_Init(void)
   hrtc.Instance = RTC;
   hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
   hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
-  if ( HAL_RTC_Init(&hrtc) != HAL_OK )
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
   {
     Error_Handler();
   }
@@ -430,17 +436,17 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-  sTime.Hours = 0x23;
-  sTime.Minutes = 0x43;
+  sTime.Hours = 0x12;
+  sTime.Minutes = 0x0;
   sTime.Seconds = 0x0;
 
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
   }
-  DateToUpdate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
+  DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
   DateToUpdate.Month = RTC_MONTH_DECEMBER;
-  DateToUpdate.Date = 0x25;
+  DateToUpdate.Date = 0x23;
   DateToUpdate.Year = 0x24;
 
   if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK)
@@ -472,12 +478,12 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
+  hsd.Init.ClockDiv = 4;
   /* USER CODE BEGIN SDIO_Init 2 */
 
-  /* Comment //  (void)SDIO_Init(hsd->Instance, hsd->Init); in  static uint32_t SD_InitCard(SD_HandleTypeDef *hsd), line 2687   */
+  // Comment //  (void)SDIO_Init(hsd->Instance, hsd->Init); in stm32f1xx_hal_sd.c
 
   /* USER CODE END SDIO_Init 2 */
 

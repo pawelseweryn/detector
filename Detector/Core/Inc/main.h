@@ -41,7 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define BKP_REG_INITVALUE   0xAA
+#define BKP_REG_INITVALUE   0xBB
 
 #define BKP_REG_INIT        RTC_BKP_DR1
 #define BKP_REG_DAY         RTC_BKP_DR2
@@ -79,6 +79,11 @@ extern "C" {
 //#define BKP_REG_RH2_C       RTC_BKP_DR33
 #define BKP_REG_SCROFF      RTC_BKP_DR34
 #define BKP_REG_PERIOD      RTC_BKP_DR35
+#define BKP_REG_TEMP1OFST   RTC_BKP_DR36
+#define BKP_REG_TEMP1SLOPE  RTC_BKP_DR37
+#define BKP_REG_TEMP1TIME   RTC_BKP_DR38
+#define BKP_REG_TEMP1ACCEL  RTC_BKP_DR39
+#define BKP_REG_TEMP2OFST   RTC_BKP_DR40
 
 #define PERIOD_MIN          200
 #define PERIOD_MAX          5000

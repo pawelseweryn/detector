@@ -24,7 +24,9 @@ typedef enum {
   GUI_State_SetSensors_3,
   GUI_State_SetSensors_4,
   GUI_State_SetSensors_5,
+  GUI_State_SetSensors_6,
   GUI_State_SetTime,
+  GUI_State_NewFile,
   GUI_State_CalibrateTP,
   GUI_State_SetSDCard
 } GUI_StateMachine_t;
@@ -52,12 +54,14 @@ void GUI_Clear();
 
 void GUI_Main();
 void GUI_SetTime();
+void GUI_NewFile();
 void GUI_CalibrateTP();
 void GUI_SetSensors_1();
 void GUI_SetSensors_2();
 void GUI_SetSensors_3();
 void GUI_SetSensors_4();
 void GUI_SetSensors_5();
+void GUI_SetSensors_6();
 void GUI_SetSDCard();
 
 void GUI_Handle();

@@ -27,12 +27,14 @@ const bool MessageSourceRecord[Message_SourceLast] = {
     false,  /* Message_SEN55_Read */
     false,  /* Message_SEN55_GetStatus */
     false,  /* Message_SEN55_CleanFan */
+    true,   /* Message_SEN55_SetTempOffset */
     false,  /* Message_SCD41_Init */
     false,  /* Message_SCD41_Start */
     true,   /* Message_SCD41_Stop */
     false,  /* Message_SCD41_Read */
     false,  /* Message_SCD41_DataReady */
     true,   /* Message_SCD41_PerformCal */
+    true,   /* Message_SCD41_SetTempOffset */
     true,   /* Message_TouchPanel */
     true,   /* Message_LCD */
     true    /* Message_GUI */
@@ -46,12 +48,14 @@ const char *MessageNames[] = {
   "SEN55 (Read)",
   "SEN55 (GetStatus)",
   "SEN55 (CleanFan)",
+  "SEN55 (SetTempOffset)",
   "SCD41 (Init)",
   "SCD41 (Start)",
   "SCD41 (Stop)",
   "SCD41 (Read)",
   "SCD41 (DataReady)",
   "SCD41 (PerformCal)",
+  "SCD41 (SetTempOffset)",
   "TouchPanel",
   "LCD"
 };
