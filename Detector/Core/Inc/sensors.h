@@ -25,6 +25,7 @@
 #define SEN55_CMD_FANCLEAN		0x0756
 #define SEN55_CMD_SETTEMPOFST   0xB260
 #define SEN55_CMD_SETACCEL      0xF760
+#define SEN55_CMD_SETWARM       0xC660
 
 #define SEN55_TIME_READSTATUS	20
 #define SEN55_TIME_STARTMEAS	50
@@ -33,6 +34,7 @@
 #define SEN55_TIME_FANCLEAN		20
 #define SEN55_TIME_SETTEMPOFST  20
 #define SEN55_TIME_SETACCEL     20
+#define SEN55_TIME_SETWARM     20
 
 /* Endianess changed to little endian */
 #define SCD41_CMD_PERFORMTEST	0x3936
@@ -99,6 +101,7 @@ bool Sensors_SEN55_Read();
 bool Sensors_SEN55_GetStatus();
 bool Sensors_SEN55_CleanFan();
 bool Sensors_SEN55_SetTempOffset( double offset, double slope, uint16_t time, uint8_t acceleration );
+bool Sensors_SEN55_SetWarm( uint16_t warm );
 double Sensors_SEN55_GetTempOffset( Sensors_Level_t level );
 double Sensors_SEN55_GetTempSlope( Sensors_Level_t level );
 uint16_t Sensors_SEN55_GetTempTime( Sensors_Level_t level );

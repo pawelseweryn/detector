@@ -1,5 +1,5 @@
 Project is developed as is. No warranty, no requests, no responsibility can be demanded.
-
+Code is messy - still needs cleanups. 
 It is project based on low-end sensors. It cannot be used as safety device or any other professional purposes. 
 
 It uses code developed and copyright by: AVRman, STMicroelectronics. 

@@ -89,9 +89,13 @@ extern "C" {
 #define PERIOD_MAX          5000
 #define PERIOD_STEP         100
 
-#define SCROFF_MIN          5000
-#define SCROFF_MAX          65000
-#define SCROFF_STEP         1000
+#define FILE_MAX_MEAS       43200
+//#define FILE_MAX_MEAS       100
+
+#define SCROFF_MIN          5
+#define SCROFF_MAX          61
+#define SCROFF_STEP         1
+
 
 /* USER CODE END EC */
 
@@ -137,6 +141,11 @@ uint16_t GetPeriod();
 void SetPeriod( uint16_t period_local );
 uint16_t GetScrOff();
 void SetScrOff( uint16_t scroff_local );
+void SetExpired();
+void Main_TurnOff();
+void Main_ReplaceDotToComma( char *buffer );
+void Main_NewMeasurementFile();
+void Main_TurnOnScreen();
 
 /* USER CODE END Private defines */
 

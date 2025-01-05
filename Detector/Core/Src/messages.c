@@ -37,7 +37,8 @@ const bool MessageSourceRecord[Message_SourceLast] = {
     true,   /* Message_SCD41_SetTempOffset */
     true,   /* Message_TouchPanel */
     true,   /* Message_LCD */
-    true    /* Message_GUI */
+    true,   /* Message_GUI */
+    true    /* Message_FATFS */
 };
 
 const char *MessageNames[] = {
@@ -57,7 +58,9 @@ const char *MessageNames[] = {
   "SCD41 (PerformCal)",
   "SCD41 (SetTempOffset)",
   "TouchPanel",
-  "LCD"
+  "LCD",
+  "GUI",
+  "FATFS"
 };
 
 const char *MessageTypeNames[] = {

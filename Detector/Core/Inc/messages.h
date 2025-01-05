@@ -38,6 +38,7 @@ enum {
   Message_TouchPanel,
   Message_LCD,
   Message_GUI,
+  Message_FATFS,
   Message_SourceLast
 } typedef MessageSource_t;
 

@@ -68,6 +68,9 @@ SRAM_HandleTypeDef hsram1;
 /* USER CODE BEGIN PV */
 extern Matrix matrix ;
 uint16_t period, scroff;
+bool expired, turnoff;
+uint32_t meas_count;
+uint8_t idleTime;
 
 /* USER CODE END PV */
 
@@ -114,9 +117,9 @@ void CheckDefaults()
 
 void ApplyDefaults()
 {
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, 0x28 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, 0x12 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, 0x24 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, 0x04 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, 0x01 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, 0x25 );
 
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X1, 635 );
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y1, 933 );
@@ -157,7 +160,7 @@ void ApplyDefaults()
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2), 60 );
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1, 70 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 10000 );
+  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 30 );
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, 500 );
 
   HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) -7.2 * 10) );
@@ -213,6 +216,63 @@ void SetScrOff( uint16_t scroff_local )
   scroff = scroff_local;
 }
 
+void WriteMeasurements()
+{
+  if( meas_count < FILE_MAX_MEAS )
+  {
+    meas_count++;
+  } else {
+    Main_NewMeasurementFile();
+  }
+
+  FatFS_WriteToFile( FILE_RESULT, true, "%.1f;%.1f;%.1f;%.1f;%.0f;%.1f;%.1f;%.1f;%.1f;%.1f;%.1f\n",
+                                        Sensors_GetValue( SENSORS_TYPE_PM1_0, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_PM2_5, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_PM4_0, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_PM10, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_CO2, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_VOC, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_NOC, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_TEMP1, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_RH1, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_TEMP2, SENSORS_LEVEL_ACTUAL ),
+                                        Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_ACTUAL ));
+}
+
+void Main_ReplaceDotToComma( char *buffer )
+{
+  while( *buffer )
+  {
+    if((*buffer) == '.')
+    {
+      (*buffer) = ',';
+    }
+    buffer++;
+  }
+}
+
+void SetExpired()
+{
+  expired = true;
+}
+
+void Main_TurnOff()
+{
+  turnoff = true;
+}
+
+void Main_NewMeasurementFile()
+{
+  meas_count = 0;
+  FatFS_NewFile( FILE_RESULT );
+  FatFS_WriteToFile( FILE_RESULT, false, "PM1.0;PM2.5;PM4.0;PM10;CO2;VOC;NOC;TEMP1;RH1;TEMP2;RH2\n" );
+}
+
+void Main_TurnOnScreen()
+{
+  idleTime = 0;
+  LCD_Backlight( true );
+}
 
 /* USER CODE END 0 */
 
@@ -224,7 +284,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  uint16_t tick;
+  uint8_t discard = 6;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -269,10 +329,14 @@ int main(void)
   LCD_Initializtion();
   LCD_Backlight( true );
 
-
   uint16_t temp;
   temp = SCD41_TIME_PERFORMTEST / 1000;
   GUI_Init( (uint8_t) temp );
+
+  expired = false;
+  turnoff = false;
+  meas_count = 0;
+  idleTime = 0;
 
   /* Init Sensors */
   Sensors_SEN55_Stop();
@@ -288,13 +352,12 @@ int main(void)
 
   /* Restore Touchpanel calibration */
   TouchPanel_RestoreCalibration();
+  Main_NewMeasurementFile();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  tick = 0;
 
   while (1)
   {
@@ -303,15 +366,32 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_Delay( 1 );
-    if(tick < period)
+    if( turnoff )
     {
-      tick++;
-    } else {
+      __disable_irq();
+      LCD_Clear( Green );
+      while(1);
+    } else if( expired )
+    {
       Sensors_SEN55_Read();
       Sensors_SCD41_Read();
-      GUI_Handle();
-      tick = 0;
+
+      if(discard)
+      {
+        discard--;
+      } else {
+        WriteMeasurements();
+      }
+
+      if(idleTime < scroff)
+      {
+        idleTime++;
+        GUI_Handle();
+      } else {
+        LCD_Backlight( false );
+      }
+
+      expired = false;
     }
   }
   /* USER CODE END 3 */
@@ -348,8 +428,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
@@ -430,6 +510,8 @@ static void MX_RTC_Init(void)
 
   /* USER CODE BEGIN Check_RTC_BKUP */
 
+  HAL_RTCEx_SetSecond_IT( &hrtc );
+
   return;
 
   /* USER CODE END Check_RTC_BKUP */
@@ -480,7 +562,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 4;
+  hsd.Init.ClockDiv = 22;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   // Comment //  (void)SDIO_Init(hsd->Instance, hsd->Init); in stm32f1xx_hal_sd.c
@@ -725,8 +807,8 @@ static void MX_FSMC_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  LCD_Clear( Red );
   while (1)
   {
   }

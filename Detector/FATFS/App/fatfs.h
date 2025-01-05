@@ -28,6 +28,10 @@
 #include "sd_diskio.h" /* defines SD_Driver as external */
 
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+
+#define FILENAME_LENGTH     30
+#define WRITE_BUFFER        256
 
 /* USER CODE END Includes */
 
@@ -39,6 +43,16 @@ extern FIL SDFile; /* File object for SD */
 void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+typedef enum {
+  FILE_RESULT,
+  FILE_LOG,
+  FILE_COUNT
+} FileType_t;
+
+void FatFS_NewFile( FileType_t fileType );
+void FatFS_WriteToFile( FileType_t fileType, bool ReplaceDotToComa, char *format, ... );
+uint32_t FatFS_GetFreeSpace();
+uint32_t FatFS_GetCardSize();
 
 /* USER CODE END Prototypes */
 #ifdef __cplusplus

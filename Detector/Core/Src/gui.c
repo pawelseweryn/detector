@@ -16,6 +16,7 @@
 #include "AsciiLib.h"
 #include "TouchPanel.h"
 #include "messages.h"
+#include "fatfs.h"
 
 #define LCD_WIDTH       240
 #define LCD_HEIGHT      320
@@ -171,13 +172,13 @@ void GUI_Init( uint8_t time )
 {
   if( StateActual == GUI_State_Reset )
   {
-    LCD_Clear( Red );
+    LCD_Clear( Yellow );
     StateHasChanged = true;
     StateActual = GUI_State_Init;
   }
 
-  GUI_Text( 68, 134, White, Red, "Initialization" );
-  GUI_Text( 110, 150, White, Red, "%2us", time );
+  GUI_Text( 68, 134, Black, Yellow, "Initialization" );
+  GUI_Text( 110, 150, Black, Yellow, "%2us", time );
 
   return;
 }
@@ -221,7 +222,7 @@ void GUI_Main()
     /* Menu */
     GUI_MenuButton( 0, 220, 119, 50, White, White, Black, GUI_State_SetSensors_1, "Sensors" );
     GUI_MenuButton( 119, 220, 120, 50, White, White, Black, GUI_State_SetTime, "Screen" );
-    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_NewFile, "New file" );
+    GUI_MenuButton( 0, 270, 119, 49, White, White, Black, GUI_State_TurnOff, "Turn off" );
     GUI_MenuButton( 119, 270, 120, 49, White, White, Black, GUI_State_SetSDCard, "SD card" );
   }
 
@@ -250,11 +251,6 @@ uint8_t GUI_IsLeapYear( uint16_t nYear )
   {
     return 0U;
   }
-}
-
-void GUI_NewFile()
-{
-
 }
 
 void GUI_SetTime()
@@ -846,7 +842,7 @@ void GUI_SetSensors_4()
   GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "RHL W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH1, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "RHH W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "RHH C:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_CRITICAL ) );
-  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.0f", ((double) GetScrOff()) / 1000 );
+  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.0f", ((double) GetScrOff()) );
   GUI_Text( MARGIN_LEFT, (13 * FONT_HEIGHT + MARGIN_TOP) + 25, White, Black, "Period:  %4.1f", ((double) GetPeriod()) / 1000 );
 
   if( StateHasChanged )
@@ -1062,10 +1058,58 @@ void GUI_SetSensors_6()
 
 void GUI_SetSDCard()
 {
-  GUI_Text( MARGIN_LEFT, (2 * FONT_HEIGHT + MARGIN_TOP), White, Black, "SD card" );
+  double FreeSize, CardSize;
+  char FreeSizeUnit, CardSizeUnit;
+
+  if( argument > 0 )
+  {
+    switch( argument )
+    {
+      case 1:
+        GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Yellow );
+        Main_NewMeasurementFile();
+        GUI_DrawFrame( 0, (MARGIN_TOP + 20), 119, 50, Green );
+        break;
+      default:
+        break;
+    }
+  }
+
+  argument = 0;
+
+  CardSize = FatFS_GetCardSize();
+  CardSizeUnit = 'k';
+  if( CardSize > 1024 )
+  {
+    CardSize /= 1024;
+    CardSizeUnit = 'M';
+  }
+  if( CardSize > 1024 )
+  {
+    CardSize /= 1024;
+    CardSizeUnit = 'G';
+  }
+
+  FreeSize = FatFS_GetFreeSpace();
+  FreeSizeUnit = 'k';
+  if( FreeSize > 1024 )
+  {
+    FreeSize /= 1024;
+    FreeSizeUnit = 'M';
+  }
+  if( FreeSize > 1024 )
+  {
+    FreeSize /= 1024;
+    FreeSizeUnit = 'G';
+  }
+
+  GUI_Text( MARGIN_LEFT, (3 * FONT_HEIGHT + MARGIN_TOP), White, Black, "Card size:  %7.3f %cB", CardSize, CardSizeUnit );
+  GUI_Text( MARGIN_LEFT, (4 * FONT_HEIGHT + MARGIN_TOP), White, Black, "Free space: %7.3f %cB", FreeSize, FreeSizeUnit );
 
   if( StateHasChanged )
   {
+    GUI_LocalButton( 0, 200, 119, 50, White, White, Black, 1, "New file" );
+
     /* Menu */
     GUI_MenuButton( 119, 270, 120, 49, White, White, Black, GUI_State_Main, "Main" );
   }
@@ -1083,6 +1127,7 @@ void GUI_HandleButton()
   if( (point.x < MAX_X) && (point.y < MAX_Y) )
   {
     released = 0;
+    Main_TurnOnScreen();
     if(!TouchPanelLocked)
     {
       for( uint16_t i = 0; i < ButtonsMenuAmount; i++ )
@@ -1189,10 +1234,8 @@ void GUI_Handle()
     case GUI_State_SetSensors_6:
       GUI_SetSensors_6();
       break;
-    case GUI_State_NewFile:
-      GUI_NewFile();
-      StateActual = GUI_State_Main;
-      StateHasChanged = true;
+    case GUI_State_TurnOff:
+      Main_TurnOff();
       break;
     case GUI_State_CalibrateTP:
       GUI_CalibrateTP();
