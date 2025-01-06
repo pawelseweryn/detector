@@ -115,10 +115,6 @@ void CheckDefaults()
 
 void ApplyDefaults()
 {
-  RTC_BKUPWrite( BKP_REG_DAY, 0x04 );
-  RTC_BKUPWrite( BKP_REG_MONTH, 0x01 );
-  RTC_BKUPWrite( BKP_REG_YEAR, 0x25 );
-
   RTC_BKUPWrite( BKP_REG_SAMPLE_X1, 635 );
   RTC_BKUPWrite( BKP_REG_SAMPLE_Y1, 933 );
   RTC_BKUPWrite( BKP_REG_SAMPLE_X2, 3132 );
@@ -367,9 +363,12 @@ int main(void)
         WriteMeasurements();
       }
 
-      if(idleTime < scroff)
+      if( idleTime < scroff )
       {
-        idleTime++;
+        if( scroff < 61 )
+        {
+          idleTime++;
+        }
         GUI_Handle();
       } else {
         LCD_Backlight( false );

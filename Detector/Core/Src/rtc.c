@@ -14,8 +14,12 @@
 #include "stm32f1xx.h"
 
 struct tm *timeDate;
+uint8_t maxDays;
+bool isLeap;
 
 #define __HAL_RTC_OVERFLOW_GET_FLAGA(__HANDLE__, __FLAG__)        (((((__HANDLE__)->CRL) & (__FLAG__)) != RESET)? SET : RESET)
+
+/* TODO: multiple changes stops RTC */
 
 /* Copied from STM HAL */
 void RTC_Init()
@@ -162,13 +166,26 @@ void RTC_Read()
   timecounter = (time_t) RTC_GetCounter();
 
   timeDate = localtime( &timecounter );
+
+  isLeap = RTC_IsLeapYear( timeDate->tm_year );
+
+  if( (timeDate->tm_mon == 3) || (timeDate->tm_mon == 5) || (timeDate->tm_mon == 8) || (timeDate->tm_mon == 10) )
+  {
+    maxDays = 30;
+  } else if( !isLeap && (timeDate->tm_mon == 1) )
+  {
+    maxDays = 28;
+  } else if( isLeap && (timeDate->tm_mon == 1) )
+  {
+    maxDays = 29;
+  } else {
+    maxDays = 31;
+  }
 }
 
 void RTC_Write()
 {
   uint32_t tickstart = 0U;
-  uint8_t maxDays;
-  bool isLeap;
   uint32_t counter;
 
   isLeap = RTC_IsLeapYear( timeDate->tm_year );
@@ -191,7 +208,7 @@ void RTC_Write()
     timeDate->tm_mday = maxDays;
   }
 
-  counter = (uint32_t) mktime( timeDate );
+  counter = ((uint32_t) mktime( timeDate ));
 
   /* Set Initialization mode */
   /* Wait till RTC is in INIT state and if Time out is reached exit */
@@ -321,79 +338,217 @@ void RTC_SetYear(uint8_t year)
 
 void RTC_IncMonth()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_mon < 11 )
+  {
+    timeDate->tm_mon++;
+  } else {
+    timeDate->tm_mon = 0;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 void RTC_DecMonth()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_mon > 0 )
+  {
+    timeDate->tm_mon--;
+  } else {
+    timeDate->tm_mon = 11;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_SetMonth(uint8_t month)
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( (month >= 0 ) && (month <= 11) )
+  {
+    timeDate->tm_mon = month;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_IncDay()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_mday < maxDays )
+  {
+    timeDate->tm_mday++;
+  } else {
+    timeDate->tm_mday = 1;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_DecDay()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_mday > 1 )
+  {
+    timeDate->tm_mday--;
+  } else {
+    timeDate->tm_mday = maxDays;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_SetDay(uint8_t day)
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( (day >= 1 ) && (day <= maxDays) )
+  {
+    timeDate->tm_mday = day;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
-
 
 void RTC_IncHour()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_hour < 23 )
+  {
+    timeDate->tm_hour++;
+  } else {
+    timeDate->tm_hour = 0;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_DecHour()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_hour > 0 )
+  {
+    timeDate->tm_hour--;
+  } else {
+    timeDate->tm_hour = 23;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_SetHour(uint8_t hour)
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( (hour >= 0 ) && (hour <= 23) )
+  {
+    timeDate->tm_hour = hour;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 
 void RTC_IncMinute()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_min < 59 )
+  {
+    timeDate->tm_min++;
+  } else {
+    timeDate->tm_min = 0;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_DecMinute()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_min > 0 )
+  {
+    timeDate->tm_min--;
+  } else {
+    timeDate->tm_min = 59;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_SetMinute(uint8_t minute)
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( (minute >= 0 ) && (minute <= 59) )
+  {
+    timeDate->tm_min = minute;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
-
 
 void RTC_IncSecond()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_sec < 59 )
+  {
+    timeDate->tm_sec++;
+  } else {
+    timeDate->tm_sec = 0;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_DecSecond()
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( timeDate->tm_sec > 0 )
+  {
+    timeDate->tm_sec--;
+  } else {
+    timeDate->tm_sec = 59;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 void RTC_SetSecond(uint8_t second)
 {
+  HAL_NVIC_DisableIRQ( RTC_IRQn );
 
+  if( (second >= 0 ) && (second <= 59) )
+  {
+    timeDate->tm_sec = second;
+  }
+
+  RTC_Write();
+  HAL_NVIC_EnableIRQ( RTC_IRQn );
 }
 
 

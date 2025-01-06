@@ -233,13 +233,34 @@ void GUI_Main()
 
 void GUI_SetTime()
 {
-  uint8_t maxDate;
-  uint8_t isLeap;
-
   if( argument > 0 )
   {
     switch( argument )
     {
+      case 1:  /* Hours ++ */
+        RTC_IncHour();
+        break;
+
+      case 2:  /* Hours -- */
+        RTC_DecHour();
+        break;
+
+      case 3:  /* Minutes ++ */
+        RTC_IncMinute();
+        break;
+
+      case 4:  /* Minutes -- */
+        RTC_DecMinute();
+        break;
+
+      case 5:  /* Seconds ++ */
+        RTC_IncSecond();
+        break;
+
+      case 6:  /* Seconds -- */
+        RTC_DecSecond();
+        break;
+
       case 7:  /* Years ++ */
         RTC_IncYear();
         break;
@@ -247,15 +268,29 @@ void GUI_SetTime()
       case 8:  /* Years -- */
         RTC_DecYear();
         break;
+
+      case 9:  /* Month ++ */
+        RTC_IncMonth();
+        break;
+
+      case 10:  /* Month -- */
+        RTC_DecMonth();
+        break;
+
+      case 11:  /* Day ++ */
+        RTC_IncDay();
+        break;
+
+      case 12:  /* Day -- */
+        RTC_DecDay();
+        break;
+
       default:
         break;
     }
   }
 
   argument = 0;
-
-//  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BCD );
-//  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BCD );
 
   /* Date & time  */
   GUI_Text( MARGIN_LEFT, MARGIN_TOP, White, Black, "%02u-%02u-%04u", RTC_GetDay(), RTC_GetMonth(), RTC_GetYear() );
@@ -656,7 +691,12 @@ void GUI_SetSensors_4()
   GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "RHL W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH1, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "RHH W:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_WARNING ) );
   GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "RHH C:   %4.0f", Sensors_GetValue( SENSORS_TYPE_RH2, SENSORS_LEVEL_CRITICAL ) );
-  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.0f", ((double) GetScrOff()) );
+  if( GetScrOff() == 61)
+  {
+    GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: DSBL" );
+  } else {
+    GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "SCR OFF: %4.0f", ((double) GetScrOff()) );
+  }
   GUI_Text( MARGIN_LEFT, (13 * FONT_HEIGHT + MARGIN_TOP) + 25, White, Black, "Period:  %4.1f", ((double) GetPeriod()) / 1000 );
 
   if( StateHasChanged )
