@@ -29,6 +29,7 @@
 #include "TouchPanel.h"
 #include "gui.h"
 #include "messages.h"
+#include "rtc.h"
 
 /* USER CODE END Includes */
 
@@ -52,8 +53,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c2;
-
-RTC_HandleTypeDef hrtc;
 
 SD_HandleTypeDef hsd;
 
@@ -82,7 +81,6 @@ static void MX_USART1_UART_Init(void);
 static void MX_USB_PCD_Init(void);
 static void MX_FSMC_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_RTC_Init(void);
 static void MX_SDIO_SD_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -105,7 +103,7 @@ int _write(int file, char *ptr, int len)
 
 void CheckDefaults()
 {
-  if( HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_INIT ) != BKP_REG_INITVALUE )
+  if( RTC_BKUPRead( BKP_REG_INIT ) != BKP_REG_INITVALUE )
   {
     Message(Message_Main, Message_Information, "No defaults found in backup registers. Restoring defaults");
 
@@ -117,81 +115,67 @@ void CheckDefaults()
 
 void ApplyDefaults()
 {
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, 0x04 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, 0x01 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, 0x25 );
+  RTC_BKUPWrite( BKP_REG_DAY, 0x04 );
+  RTC_BKUPWrite( BKP_REG_MONTH, 0x01 );
+  RTC_BKUPWrite( BKP_REG_YEAR, 0x25 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X1, 635 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y1, 933 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X2, 3132 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y2, 852 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X3, 2356 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y3, 3261 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X1, 635 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y1, 933 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X2, 3132 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y2, 852 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X3, 2356 );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y3, 3261 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2), 10 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1, 35 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2), 10 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1, 35 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2), 15 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1, 55 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2), 15 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1, 55 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2), 15 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1, 55 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2), 15 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1, 55 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2), 45 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1, 100 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2), 45 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1, 100 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2), 1200 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1, 2000 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2), 1200 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1, 2000 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2), 150 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1, 250 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2), 150 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1, 250 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2), 20 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1, 150 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2), 20 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1, 150 );
 
   /* For temperature and humidity TEMP1/RH1 is for lower than, TEMP2/RH2 is for higher than */
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1, 10 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2), 15 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2), 27 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1, 30 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1, 10 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2), 15 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2), 27 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1, 30 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1, 30 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2), 40 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2), 60 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1, 70 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1, 30 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2), 40 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2), 60 );
+  RTC_BKUPWrite( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1, 70 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, 30 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, 500 );
+  RTC_BKUPWrite( BKP_REG_SCROFF, 30 );
+  RTC_BKUPWrite( BKP_REG_PERIOD, 500 );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) -7.2 * 10) );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1SLOPE, (uint16_t) ((double) 0) );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1TIME, 0 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1ACCEL, 1 );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP2OFST, (uint16_t) ((double) 7.2 * 10) );
+  RTC_BKUPWrite( BKP_REG_TEMP1OFST, (int16_t) ((double) -7.2 * 10) );
+  RTC_BKUPWrite( BKP_REG_TEMP1SLOPE, (uint16_t) ((double) 0) );
+  RTC_BKUPWrite( BKP_REG_TEMP1TIME, 0 );
+  RTC_BKUPWrite( BKP_REG_TEMP1ACCEL, 1 );
+  RTC_BKUPWrite( BKP_REG_TEMP2OFST, (uint16_t) ((double) 7.2 * 10) );
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_INIT, BKP_REG_INITVALUE );
+  RTC_BKUPWrite( BKP_REG_INIT, BKP_REG_INITVALUE );
 
   return;
 }
 
 void RestoreSettings()
 {
-  RTC_DateTypeDef DateToUpdate = {0};
-
-  DateToUpdate.Date = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_DAY );
-  DateToUpdate.Month = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_MONTH );
-  DateToUpdate.Year =  HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_YEAR );
-
-  Message(Message_Main, Message_Debug, "Date restored: %02X-%02X-%02X", DateToUpdate.Date, DateToUpdate.Month, DateToUpdate.Year);
-
-  if ( HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK )
-  {
-    Error_Handler();
-  }
-
-  period = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_PERIOD );
-  scroff = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SCROFF );
-
+  period = RTC_BKUPRead( BKP_REG_PERIOD );
+  scroff = RTC_BKUPRead( BKP_REG_SCROFF );
 }
 
 inline uint16_t GetPeriod()
@@ -201,7 +185,7 @@ inline uint16_t GetPeriod()
 
 void SetPeriod( uint16_t period_local )
 {
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_PERIOD, period_local );
+  RTC_BKUPWrite( BKP_REG_PERIOD, period_local );
   period = period_local;
 }
 
@@ -212,7 +196,7 @@ inline uint16_t GetScrOff()
 
 void SetScrOff( uint16_t scroff_local )
 {
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SCROFF, scroff_local );
+  RTC_BKUPWrite( BKP_REG_SCROFF, scroff_local );
   scroff = scroff_local;
 }
 
@@ -301,7 +285,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-
+  RTC_Init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -311,10 +295,10 @@ int main(void)
   MX_USB_PCD_Init();
   MX_FSMC_Init();
   MX_I2C2_Init();
-  MX_RTC_Init();
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+
 
   CheckDefaults();
   RestoreSettings();
@@ -476,68 +460,6 @@ static void MX_I2C2_Init(void)
   /* USER CODE BEGIN I2C2_Init 2 */
 
   /* USER CODE END I2C2_Init 2 */
-
-}
-
-/**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RTC_Init(void)
-{
-
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef DateToUpdate = {0};
-
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
-
-  /** Initialize RTC Only
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
-  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* USER CODE BEGIN Check_RTC_BKUP */
-
-  HAL_RTCEx_SetSecond_IT( &hrtc );
-
-  return;
-
-  /* USER CODE END Check_RTC_BKUP */
-
-  /** Initialize RTC and set the Time and Date
-  */
-  sTime.Hours = 0x12;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
-
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
-  DateToUpdate.Month = RTC_MONTH_DECEMBER;
-  DateToUpdate.Date = 0x23;
-  DateToUpdate.Year = 0x24;
-
-  if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
 
 }
 
@@ -797,7 +719,6 @@ static void MX_FSMC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**

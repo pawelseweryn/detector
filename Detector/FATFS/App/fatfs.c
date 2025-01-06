@@ -21,7 +21,9 @@
 #include <stdbool.h>
 #include "fatfs.h"
 #include "messages.h"
+#include "rtc.h"
 /* USER CODE END Header */
+#include "fatfs.h"
 
 uint8_t retSD;    /* Return value for SD */
 char SDPath[4];   /* SD logical drive path */
@@ -30,7 +32,6 @@ FIL SDFile;       /* File object for SD */
 
 /* USER CODE BEGIN Variables */
 char Filename[FILE_COUNT][FILENAME_LENGTH];
-extern RTC_HandleTypeDef hrtc;
 extern SD_HandleTypeDef hsd;
 
 /* USER CODE END Variables */
@@ -63,32 +64,30 @@ void MX_FATFS_Init(void)
 DWORD get_fattime(void)
 {
   /* USER CODE BEGIN get_fattime */
-  RTC_TimeTypeDef sTime;
-  RTC_DateTypeDef sDate;
+  uint8_t year;
 
-  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BIN );
-  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BIN );
+  if(RTC_GetYear() < 1980)
+  {
+    year = 0;
+  } else {
+    year = RTC_GetYear() - 1980;
+  }
 
-  return  ((DWORD)(sDate.Year + 20) << 25)  // Year 2014
-          | ((DWORD)sDate.Month << 21)            // Month 7
-          | ((DWORD)sDate.Date << 16)           // Mday 10
-          | ((DWORD)sTime.Hours << 11)           // Hour 16
-          | ((DWORD)sTime.Minutes << 5)             // Min 0
-          | ((DWORD)sTime.Seconds >> 1);            // Sec 0
+  return  ((DWORD)(year) << 25)
+          | ((DWORD)RTC_GetMonth() << 21)
+          | ((DWORD)RTC_GetDay() << 16)
+          | ((DWORD)RTC_GetHour() << 11)
+          | ((DWORD)RTC_GetMinute() << 5)
+          | ((DWORD)RTC_GetSecond() >> 1);
   /* USER CODE END get_fattime */
 }
 
 /* USER CODE BEGIN Application */
 void FatFS_NewFile( FileType_t fileType )
 {
-  RTC_TimeTypeDef sTime;
-  RTC_DateTypeDef sDate;
   char ext[4];
   uint32_t FreeSize;
   uint32_t SinKB;
-
-  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BCD );
-  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BCD );
 
   SinKB = 1024 / SDFatFS.ssize;
   FreeSize = SDFatFS.free_clust * SDFatFS.csize / SinKB;
@@ -109,7 +108,7 @@ void FatFS_NewFile( FileType_t fileType )
       break;
   }
 
-  sprintf( Filename[fileType], "%02X-%02X-%02X_%02X-%02X-%02X.%s", sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes, sTime.Seconds, ext );
+  sprintf( Filename[fileType], "%04u-%02u-%02u_%02u-%02u-%02u.%s", RTC_GetYear(), RTC_GetMonth(), RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond(), ext );
 
   if( f_open( &SDFile, Filename[fileType], (FA_CREATE_ALWAYS | FA_WRITE) ) == FR_OK )
   {

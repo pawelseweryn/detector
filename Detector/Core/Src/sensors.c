@@ -17,7 +17,6 @@
 /* 6 values per sensor:  ACTUAL, WARNING, CRITICAL, MAX, MIN, STEP */
 static double values[11][6];
 
-extern RTC_HandleTypeDef hrtc;
 extern I2C_HandleTypeDef hi2c2;
 
 double TEMP1_Offset[4], TEMP1_Slope[4], TEMP2_Offset[4];
@@ -71,60 +70,60 @@ void Sensors_SetValue( Sensors_Type_t type, Sensors_Level_t level, double value 
       warning_critical = 1;
     }
 
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SENSOR_ST + (type * 2) + warning_critical, value );
+    RTC_BKUPWrite( BKP_REG_SENSOR_ST + (type * 2) + warning_critical, value );
     values[type][level] = value;
   }
 }
 
 void Sensors_RecallValues()
 {
-  values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) );
-  values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1 );
+  values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) );
+  values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM1_0 * 2) + 1 );
   values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_MAX] = 100;
   values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_MIN] = 10;
   values[SENSORS_TYPE_PM1_0][SENSORS_LEVEL_STEP] = 5;
 
-  values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) );
-  values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1 );
+  values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) );
+  values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM2_5 * 2) + 1 );
   values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_MAX] = 100;
   values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_MIN] = 10;
   values[SENSORS_TYPE_PM2_5][SENSORS_LEVEL_STEP] = 5;
 
-  values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) );
-  values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1 );
+  values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) );
+  values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM4_0 * 2) + 1 );
   values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_MAX] = 100;
   values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_MIN] = 10;
   values[SENSORS_TYPE_PM4_0][SENSORS_LEVEL_STEP] = 5;
 
-  values[SENSORS_TYPE_PM10][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) );
-  values[SENSORS_TYPE_PM10][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1 );
+  values[SENSORS_TYPE_PM10][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) );
+  values[SENSORS_TYPE_PM10][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_PM10 * 2) + 1 );
   values[SENSORS_TYPE_PM10][SENSORS_LEVEL_MAX] = 100;
   values[SENSORS_TYPE_PM10][SENSORS_LEVEL_MIN] = 10;
   values[SENSORS_TYPE_PM10][SENSORS_LEVEL_STEP] = 5;
 
-  values[SENSORS_TYPE_CO2][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) );
-  values[SENSORS_TYPE_CO2][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1 );
+  values[SENSORS_TYPE_CO2][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) );
+  values[SENSORS_TYPE_CO2][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_CO2 * 2) + 1 );
   values[SENSORS_TYPE_CO2][SENSORS_LEVEL_MAX] = 3000;
   values[SENSORS_TYPE_CO2][SENSORS_LEVEL_MIN] = 400;
   values[SENSORS_TYPE_CO2][SENSORS_LEVEL_STEP] = 100;
 
-  values[SENSORS_TYPE_VOC][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) );
-  values[SENSORS_TYPE_VOC][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1 );
+  values[SENSORS_TYPE_VOC][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) );
+  values[SENSORS_TYPE_VOC][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_VOC * 2) + 1 );
   values[SENSORS_TYPE_VOC][SENSORS_LEVEL_MAX] = 300;
   values[SENSORS_TYPE_VOC][SENSORS_LEVEL_MIN] = 100;
   values[SENSORS_TYPE_VOC][SENSORS_LEVEL_STEP] = 10;
 
-  values[SENSORS_TYPE_NOC][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) );
-  values[SENSORS_TYPE_NOC][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1 );
+  values[SENSORS_TYPE_NOC][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) );
+  values[SENSORS_TYPE_NOC][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_NOC * 2) + 1 );
   values[SENSORS_TYPE_NOC][SENSORS_LEVEL_MAX] = 300;
   values[SENSORS_TYPE_NOC][SENSORS_LEVEL_MIN] = 5;
   values[SENSORS_TYPE_NOC][SENSORS_LEVEL_STEP] = 5;
 
   /* For temperature and humidity TEMP1/RH1 is for lower than, TEMP2/RH2 is for higher than */
-  values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1 );
-  values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) );
-  values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) );
-  values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1 );
+  values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) + 1 );
+  values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP1 * 2) );
+  values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) );
+  values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_TEMP2 * 2) + 1 );
   values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_MAX] = 20;
   values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_MIN] = 0;
   values[SENSORS_TYPE_TEMP1][SENSORS_LEVEL_STEP] = 1;
@@ -132,10 +131,10 @@ void Sensors_RecallValues()
   values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_MIN] = 20;
   values[SENSORS_TYPE_TEMP2][SENSORS_LEVEL_STEP] = 1;
 
-  values[SENSORS_TYPE_RH1][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1 );
-  values[SENSORS_TYPE_RH1][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) );
-  values[SENSORS_TYPE_RH2][SENSORS_LEVEL_WARNING] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) );
-  values[SENSORS_TYPE_RH2][SENSORS_LEVEL_CRITICAL] = (double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1 );
+  values[SENSORS_TYPE_RH1][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) + 1 );
+  values[SENSORS_TYPE_RH1][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH1 * 2) );
+  values[SENSORS_TYPE_RH2][SENSORS_LEVEL_WARNING] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) );
+  values[SENSORS_TYPE_RH2][SENSORS_LEVEL_CRITICAL] = (double) RTC_BKUPRead( BKP_REG_SENSOR_ST + (SENSORS_TYPE_RH2 * 2) + 1 );
   values[SENSORS_TYPE_RH1][SENSORS_LEVEL_MAX] = 50;
   values[SENSORS_TYPE_RH1][SENSORS_LEVEL_MIN] = 10;
   values[SENSORS_TYPE_RH1][SENSORS_LEVEL_STEP] = 5;
@@ -143,27 +142,27 @@ void Sensors_RecallValues()
   values[SENSORS_TYPE_RH2][SENSORS_LEVEL_MIN] = 50;
   values[SENSORS_TYPE_RH2][SENSORS_LEVEL_STEP] = 5;
 
-  TEMP1_Offset[SENSORS_LEVEL_ACTUAL] = ((double) ((int16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1OFST))) / 10;
+  TEMP1_Offset[SENSORS_LEVEL_ACTUAL] = ((double) ((int16_t) RTC_BKUPRead( BKP_REG_TEMP1OFST ))) / 10;
   TEMP1_Offset[SENSORS_LEVEL_MAX] = 10;
   TEMP1_Offset[SENSORS_LEVEL_MIN] = -10;
   TEMP1_Offset[SENSORS_LEVEL_STEP] = 0.1;
 
-  TEMP1_Slope[SENSORS_LEVEL_ACTUAL] = ((double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1SLOPE)) / 10;
+  TEMP1_Slope[SENSORS_LEVEL_ACTUAL] = ((double) RTC_BKUPRead( BKP_REG_TEMP1SLOPE)) / 10;
   TEMP1_Slope[SENSORS_LEVEL_MAX] = 5;
   TEMP1_Slope[SENSORS_LEVEL_MIN] = -5;
   TEMP1_Slope[SENSORS_LEVEL_STEP] = 0.1;
 
-  TEMP1_Time[SENSORS_LEVEL_ACTUAL] = (uint16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1TIME);
+  TEMP1_Time[SENSORS_LEVEL_ACTUAL] = (uint16_t) RTC_BKUPRead( BKP_REG_TEMP1TIME );
   TEMP1_Time[SENSORS_LEVEL_MAX] = 100;
   TEMP1_Time[SENSORS_LEVEL_MIN] = 0;
   TEMP1_Time[SENSORS_LEVEL_STEP] = 1;
 
-  TEMP1_Accel[SENSORS_LEVEL_ACTUAL] = (uint16_t) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP1ACCEL);
+  TEMP1_Accel[SENSORS_LEVEL_ACTUAL] = (uint16_t) RTC_BKUPRead( BKP_REG_TEMP1ACCEL );
   TEMP1_Accel[SENSORS_LEVEL_MAX] = 2;
   TEMP1_Accel[SENSORS_LEVEL_MIN] = 0;
   TEMP1_Accel[SENSORS_LEVEL_STEP] = 1;
 
-  TEMP2_Offset[SENSORS_LEVEL_ACTUAL] = ((double) HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_TEMP2OFST)) / 10;
+  TEMP2_Offset[SENSORS_LEVEL_ACTUAL] = ((double) RTC_BKUPRead( BKP_REG_TEMP2OFST )) / 10;
   TEMP2_Offset[SENSORS_LEVEL_MAX] = 10;
   TEMP2_Offset[SENSORS_LEVEL_MIN] = -10;
   TEMP2_Offset[SENSORS_LEVEL_STEP] = 0.1;
@@ -454,10 +453,10 @@ bool Sensors_SEN55_SetTempOffset(double offset, double slope, uint16_t time, uin
   int16_t word;
   double calc;
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) offset * 10) );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1SLOPE, (uint16_t) ((double) slope * 10) );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1TIME, time );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1ACCEL, acceleration );
+  RTC_BKUPWrite( BKP_REG_TEMP1OFST, (int16_t) ((double) offset * 10) );
+  RTC_BKUPWrite( BKP_REG_TEMP1SLOPE, (uint16_t) ((double) slope * 10) );
+  RTC_BKUPWrite( BKP_REG_TEMP1TIME, time );
+  RTC_BKUPWrite( BKP_REG_TEMP1ACCEL, acceleration );
 
   TEMP1_Offset[ SENSORS_LEVEL_ACTUAL ] = offset;
   TEMP1_Slope[ SENSORS_LEVEL_ACTUAL ] = slope;
@@ -490,7 +489,7 @@ bool Sensors_SEN55_SetTempOffset(double offset, double slope, uint16_t time, uin
   data[9] = (uint8_t) (((uint16_t) time & 0x00FF));
   data[10] = Sensors_CalcCrc( &data[8], 2 );
 
-  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 11, 100 );
 
   if( status != HAL_OK )
   {
@@ -523,6 +522,11 @@ bool Sensors_SEN55_SetTempOffset(double offset, double slope, uint16_t time, uin
 
   HAL_Delay( SEN55_TIME_SETTEMPOFST );
 
+  if( !Sensors_SEN55_SetWarm( 65535 ) )
+  {
+    return false;
+  }
+
   if( !Sensors_SEN55_Start() )
   {
     return false;
@@ -533,59 +537,37 @@ bool Sensors_SEN55_SetTempOffset(double offset, double slope, uint16_t time, uin
 
 bool Sensors_SEN55_SetWarm( uint16_t warm )
 {
-//  uint16_t command;
-//  HAL_StatusTypeDef status;
-//  uint8_t data[11];
-//  int16_t word;
-//  double calc;
-//
-//  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1OFST, (int16_t) ((double) offset * 10) );
-//  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1SLOPE, (uint16_t) ((double) slope * 10) );
-//  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1TIME, time );
-//  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP1ACCEL, acceleration );
-//
-//  TEMP1_Offset[ SENSORS_LEVEL_ACTUAL ] = offset;
-//  TEMP1_Slope[ SENSORS_LEVEL_ACTUAL ] = slope;
-//  TEMP1_Time[ SENSORS_LEVEL_ACTUAL ] = time;
-//  TEMP1_Accel[ SENSORS_LEVEL_ACTUAL ] = acceleration;
-//
-//  if( !Sensors_SEN55_Stop() )
-//  {
-//    return false;
-//  }
-//
-//  command = SEN55_CMD_SETTEMPOFST;
-//
-//  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
-//  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
-//
-//  calc = offset * 200;
-//  word = (int16_t) calc;
-//  data[2] = (uint8_t) (((int16_t) word & 0xFF00) >> 8);
-//  data[3] = (uint8_t) (((int16_t) word & 0x00FF));
-//  data[4] = Sensors_CalcCrc( &data[2], 2 );
-//
-//  calc = slope * 10000;
-//  word = (int16_t) calc;
-//  data[5] = (uint8_t) (((int16_t) word & 0xFF00) >> 8);
-//  data[6] = (uint8_t) (((int16_t) word & 0x00FF));
-//  data[7] = Sensors_CalcCrc( &data[5], 2 );
-//
-//  data[8] = (uint8_t) (((uint16_t) time & 0xFF00) >> 8);
-//  data[9] = (uint8_t) (((uint16_t) time & 0x00FF));
-//  data[10] = Sensors_CalcCrc( &data[8], 2 );
-//
-//  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 5, 100 );
-//
-//  if( status != HAL_OK )
-//  {
-//    Message( Message_SEN55_SetTempOffset, Message_Error, "FAILED (no communication)" );
-//    return false;
-//  }
-//
-//  HAL_Delay( SEN55_TIME_SETTEMPOFST );
-//
-//  Message( Message_SEN55_SetTempOffset, Message_Debug, "Offset set to: %.1f, slope to: %.1f, time to: %u", offset, slope, time );
+  uint16_t command;
+  HAL_StatusTypeDef status;
+  uint8_t data[11];
+  uint16_t word;
+
+  if( !Sensors_SEN55_Stop() )
+  {
+    return false;
+  }
+
+  command = SEN55_CMD_SETWARM;
+
+  data[0] = (uint8_t) (((uint16_t) command & 0x00FF));
+  data[1] = (uint8_t) (((uint16_t) command & 0xFF00) >> 8);
+
+  word = (uint16_t) warm;
+  data[2] = (uint8_t) (((int16_t) word & 0xFF00) >> 8);
+  data[3] = (uint8_t) (((int16_t) word & 0x00FF));
+  data[4] = Sensors_CalcCrc( &data[2], 2 );
+
+  status = HAL_I2C_Master_Transmit( &hi2c2, (SEN55_ADDRESS << 1), (uint8_t *) data, 5, 100 );
+
+  if( status != HAL_OK )
+  {
+    Message( Message_SEN55_SetTempOffset, Message_Error, "FAILED (no communication)" );
+    return false;
+  }
+
+  HAL_Delay( SEN55_TIME_SETWARM );
+
+  Message( Message_SEN55_SetTempOffset, Message_Debug, "Warm set to: %u", warm );
 
   return true;
 }
@@ -906,7 +888,7 @@ bool Sensors_SCD41_SetTempOffset( double offset )
   uint16_t word;
   double calc;
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_TEMP2OFST, (uint16_t) ((double) offset * 10) );
+  RTC_BKUPWrite( BKP_REG_TEMP2OFST, (uint16_t) ((double) offset * 10) );
   TEMP2_Offset[ SENSORS_LEVEL_ACTUAL ] = offset;
 
   if( !Sensors_SCD41_Stop() )

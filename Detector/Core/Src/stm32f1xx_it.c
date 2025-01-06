@@ -22,6 +22,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,7 +56,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern RTC_HandleTypeDef hrtc;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -203,12 +204,13 @@ void SysTick_Handler(void)
   */
 void RTC_IRQHandler(void)
 {
-  /* USER CODE BEGIN RTC_IRQn 0 */
+  /* TODO: overflow flag */
+  /* Clear flag Second */
+  RTC_SECOND_CLEAR_FLAG(RTC, RTC_FLAG_SEC);
 
   /* USER CODE END RTC_IRQn 0 */
-  HAL_RTCEx_RTCIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
-
+  RTC_Read();
   SetExpired();
 
   /* USER CODE END RTC_IRQn 1 */

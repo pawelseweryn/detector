@@ -29,7 +29,6 @@
 /* Private variables ---------------------------------------------------------*/
 static Matrix matrix ;
 
-extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;
 
 /* DisplaySample LCD�����϶�Ӧ��ads7843����ADֵ �磺LCD ����45,45 Ӧ�õ�X Y����ADC�ֱ�Ϊ3388,920 */	
@@ -379,12 +378,12 @@ void TouchPanel_Calibrate()
     ScreenSample[i].y = Ptr->y;
   }
 
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X1, ScreenSample[0].x );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y1, ScreenSample[0].y );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X2, ScreenSample[1].x );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y2, ScreenSample[1].y );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_X3, ScreenSample[2].x );
-  HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_SAMPLE_Y3, ScreenSample[2].y );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X1, ScreenSample[0].x );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y1, ScreenSample[0].y );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X2, ScreenSample[1].x );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y2, ScreenSample[1].y );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_X3, ScreenSample[2].x );
+  RTC_BKUPWrite( BKP_REG_SAMPLE_Y3, ScreenSample[2].y );
 
   Message( Message_TouchPanel, Message_Debug, "Touchpanel calibration updated: %u, %u, %u, %u, %u, %u",
                                               ScreenSample[0].x, ScreenSample[0].y,
@@ -397,12 +396,12 @@ void TouchPanel_Calibrate()
 
 void TouchPanel_RestoreCalibration()
 {
-  ScreenSample[0].x = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_X1 );
-  ScreenSample[0].y = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_Y1 );
-  ScreenSample[1].x = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_X2 );
-  ScreenSample[1].y = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_Y2 );
-  ScreenSample[2].x = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_X3 );
-  ScreenSample[2].y = HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_SAMPLE_Y3 );
+  ScreenSample[0].x = RTC_BKUPRead( BKP_REG_SAMPLE_X1 );
+  ScreenSample[0].y = RTC_BKUPRead( BKP_REG_SAMPLE_Y1 );
+  ScreenSample[1].x = RTC_BKUPRead( BKP_REG_SAMPLE_X2 );
+  ScreenSample[1].y = RTC_BKUPRead( BKP_REG_SAMPLE_Y2 );
+  ScreenSample[2].x = RTC_BKUPRead( BKP_REG_SAMPLE_X3 );
+  ScreenSample[2].y = RTC_BKUPRead( BKP_REG_SAMPLE_Y3 );
 
   Message( Message_TouchPanel, Message_Debug, "Touchpanel calibration restored: %u, %u, %u, %u, %u, %u",
                                               ScreenSample[0].x, ScreenSample[0].y,

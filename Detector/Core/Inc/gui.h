@@ -65,7 +65,5 @@ void GUI_SetSDCard();
 
 void GUI_Handle();
 void GUI_HandleButton();
-void GUI_CheckDate( RTC_DateTypeDef *sDate );
-uint8_t GUI_IsLeapYear( uint16_t nYear );
 
 #endif /* INC_GUI_H_ */

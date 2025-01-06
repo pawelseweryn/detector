@@ -17,6 +17,7 @@
 #include "TouchPanel.h"
 #include "messages.h"
 #include "fatfs.h"
+#include "rtc.h"
 
 #define LCD_WIDTH       240
 #define LCD_HEIGHT      320
@@ -29,7 +30,6 @@
 #define FONT_HEIGHT     16
 #define FONT_WIDTH      8
 
-extern RTC_HandleTypeDef hrtc;
 static GUI_StateMachine_t StateActual = GUI_State_Reset;
 static GUI_MenuButton_t ButtonsMenu[BUTTONS_MENU_MAX];
 static GUI_LocalButton_t ButtonsLocal[BUTTONS_LOCAL_MAX];
@@ -231,228 +231,42 @@ void GUI_Main()
   return;
 }
 
-uint8_t GUI_IsLeapYear( uint16_t nYear )
-{
-  if ((nYear % 4U) != 0U)
-  {
-    return 0U;
-  }
-
-  if ((nYear % 100U) != 0U)
-  {
-    return 1U;
-  }
-
-  if ((nYear % 400U) == 0U)
-  {
-    return 1U;
-  }
-  else
-  {
-    return 0U;
-  }
-}
-
 void GUI_SetTime()
 {
-  RTC_DateTypeDef sDate;
-  RTC_TimeTypeDef sTime;
   uint8_t maxDate;
   uint8_t isLeap;
 
   if( argument > 0 )
   {
-    HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BIN );
-    HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BIN );
-
-    isLeap = GUI_IsLeapYear( sDate.Year );
-
-    if( (sDate.Month == 4) || (sDate.Month == 6) || (sDate.Month == 9) || (sDate.Month == 11) )
-    {
-      maxDate = 30;
-    } else if( !isLeap && (sDate.Month == 2) )
-    {
-      maxDate = 28;
-    } else if( isLeap && (sDate.Month == 2) )
-    {
-      maxDate = 29;
-    } else {
-      maxDate = 31;
-    }
-
-
     switch( argument )
     {
-      case 1: /* Hours ++ */
-        if( sTime.Hours < 23 )
-        {
-          sTime.Hours++;
-        } else {
-          sTime.Hours = 0;
-        }
-        break;
-
-      case 2: /* Hours -- */
-        if( sTime.Hours > 0 )
-        {
-          sTime.Hours--;
-        } else {
-          sTime.Hours = 23;
-        }
-        break;
-
-      case 3: /* Minutes ++ */
-        if( sTime.Minutes < 59 )
-        {
-          sTime.Minutes++;
-        } else {
-          sTime.Minutes = 0;
-        }
-        break;
-
-      case 4: /* Minutes ++ */
-        if( sTime.Minutes > 0 )
-        {
-          sTime.Minutes--;
-        } else {
-          sTime.Minutes = 59;
-        }
-        break;
-
-      case 5: /* Seconds ++ */
-        if( sTime.Seconds < 59 )
-        {
-          sTime.Seconds++;
-        } else {
-          sTime.Seconds = 0;
-        }
-        break;
-
-      case 6: /* Seconds -- */
-        if( sTime.Seconds > 0 )
-        {
-          sTime.Seconds--;
-        } else {
-          sTime.Seconds = 59;
-        }
-        break;
-
       case 7:  /* Years ++ */
-        if( sDate.Year < 99 )
-        {
-          sDate.Year++;
-        } else {
-          sDate.Year = 0;
-        }
+        RTC_IncYear();
         break;
 
       case 8:  /* Years -- */
-        if( sDate.Year > 0 )
-        {
-          sDate.Year--;
-        } else {
-          sDate.Year = 99;
-        }
+        RTC_DecYear();
         break;
-
-      case 9: /* Months ++ */
-        if( sDate.Month < 12 )
-        {
-          sDate.Month++;
-        } else {
-          sDate.Month = 1;
-        }
-        break;
-
-      case 10: /* Months -- */
-        if( sDate.Month > 1 )
-        {
-          sDate.Month--;
-        } else {
-          sDate.Month = 12;
-        }
-
-        break;
-
-      case 11: /* Date ++ */
-
-        if( sDate.Date < maxDate )
-        {
-          sDate.Date++;
-        } else {
-          sDate.Date = 1;
-        }
-        break;
-
-      case 12: /* Date -- */
-        if( (sDate.Month == 4) || (sDate.Month == 6) || (sDate.Month == 9) || (sDate.Month == 11) )
-        {
-          maxDate = 30;
-        } else if( !GUI_IsLeapYear( sDate.Year ) && (sDate.Month == 2) )
-        {
-          maxDate = 28;
-        } else if( GUI_IsLeapYear( sDate.Year ) && (sDate.Month == 2) )
-        {
-          maxDate = 29;
-        } else {
-          maxDate = 31;
-        }
-
-        if( sDate.Date > 1 )
-        {
-          sDate.Date--;
-        } else {
-          sDate.Date = maxDate;
-        }
-        break;
-
       default:
         break;
     }
-
-    if( argument <= 6 )
-    {
-      HAL_RTC_WaitForSynchro( &hrtc );
-      HAL_RTC_SetTime( &hrtc, &sTime, RTC_FORMAT_BIN );
-
-      Message( Message_TouchPanel, Message_Debug, "Argument detected %u", argument );
-      argument = 0;
-
-    } else {
-      isLeap = GUI_IsLeapYear( sDate.Year );
-
-      if( ((sDate.Month == 4) || (sDate.Month == 6) || (sDate.Month == 9) || (sDate.Month == 11)) && (sDate.Date == 31) )
-      {
-        sDate.Date = 30;
-      } else if( !isLeap && (sDate.Month == 2) && (sDate.Date > 28) )
-      {
-        sDate.Date = 28;
-      } else if( isLeap && (sDate.Month == 2) && (sDate.Date > 29) )
-      {
-        sDate.Date = 29;
-      }
-
-      HAL_RTC_WaitForSynchro( &hrtc );
-      HAL_RTC_SetDate( &hrtc, &sDate, RTC_FORMAT_BIN );
-
-      Message( Message_GUI, Message_Debug, "Argument detected %u", argument );
-      argument = 0;
-    }
   }
 
-  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BCD );
-  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BCD );
+  argument = 0;
+
+//  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BCD );
+//  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BCD );
 
   /* Date & time  */
-  GUI_Text( MARGIN_LEFT, MARGIN_TOP, White, Black, "%02X-%02X-%02X", sDate.Date, sDate.Month, sDate.Year );
-  GUI_Text( (LCD_WIDTH - (8 * FONT_WIDTH + MARGIN_RIGHT)), MARGIN_TOP, White, Black, "%02X:%02X:%02X", sTime.Hours, sTime.Minutes, sTime.Seconds );
+  GUI_Text( MARGIN_LEFT, MARGIN_TOP, White, Black, "%02u-%02u-%04u", RTC_GetDay(), RTC_GetMonth(), RTC_GetYear() );
+  GUI_Text( (LCD_WIDTH - (8 * FONT_WIDTH + MARGIN_RIGHT)), MARGIN_TOP, White, Black, "%02u:%02u:%02u", RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond() );
 
-  GUI_Text( MARGIN_LEFT, (3 * FONT_HEIGHT + MARGIN_TOP), White, Black,       "Hour:    %02X", sTime.Hours );
-  GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "Minutes: %02X", sTime.Minutes );
-  GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "Seconds: %02X", sTime.Seconds );
-  GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "Year:    %02X", sDate.Year );
-  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "Month:   %02X", sDate.Month );
-  GUI_Text( MARGIN_LEFT, (13 * FONT_HEIGHT + MARGIN_TOP) + 25, White, Black, "Day:     %02X", sDate.Date );
+  GUI_Text( MARGIN_LEFT, (3 * FONT_HEIGHT + MARGIN_TOP), White, Black,       "Hour:      %02u", RTC_GetHour() );
+  GUI_Text( MARGIN_LEFT, (5 * FONT_HEIGHT + MARGIN_TOP) + 5, White, Black,   "Minutes:   %02u", RTC_GetMinute() );
+  GUI_Text( MARGIN_LEFT, (7 * FONT_HEIGHT + MARGIN_TOP) + 10, White, Black,  "Seconds:   %02u", RTC_GetSecond() );
+  GUI_Text( MARGIN_LEFT, (9 * FONT_HEIGHT + MARGIN_TOP) + 15, White, Black,  "Year:    %04u", RTC_GetYear() );
+  GUI_Text( MARGIN_LEFT, (11 * FONT_HEIGHT + MARGIN_TOP) + 20, White, Black, "Month:     %02u", RTC_GetMonth() );
+  GUI_Text( MARGIN_LEFT, (13 * FONT_HEIGHT + MARGIN_TOP) + 25, White, Black, "Day:       %02u", RTC_GetDay() );
 
   if( StateHasChanged )
   {
@@ -1174,38 +988,16 @@ void GUI_HandleButton()
   return;
 }
 
-void GUI_CheckDate( RTC_DateTypeDef *sDate )
-{
-  if( (sDate->Date != HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_DAY )) ||
-      (sDate->Month != HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_MONTH )) ||
-      (sDate->Year != HAL_RTCEx_BKUPRead( &hrtc, BKP_REG_YEAR )))
-  {
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_DAY, sDate->Date );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_MONTH, sDate->Month );
-    HAL_RTCEx_BKUPWrite( &hrtc, BKP_REG_YEAR, sDate->Year );
-
-    Message(Message_GUI, Message_Debug, "Date updated: %02X-%02X-%02X", sDate->Date, sDate->Month, sDate->Year);
-  }
-}
-
 void GUI_Handle()
 {
-  RTC_TimeTypeDef sTime;
-  RTC_DateTypeDef sDate;
-
   if( StateHasChanged )
   {
     GUI_Clear();
   }
 
-  HAL_RTC_GetTime( &hrtc, &sTime, RTC_FORMAT_BCD );
-  HAL_RTC_GetDate( &hrtc, &sDate, RTC_FORMAT_BCD );
-
-  GUI_CheckDate( &sDate );
-
   /* Date & time  */
-  GUI_Text( MARGIN_LEFT, MARGIN_TOP, White, Black, "%02X-%02X-%02X", sDate.Date, sDate.Month, sDate.Year );
-  GUI_Text( (LCD_WIDTH - (8 * FONT_WIDTH + MARGIN_RIGHT)), MARGIN_TOP, White, Black, "%02X:%02X:%02X", sTime.Hours, sTime.Minutes, sTime.Seconds );
+  GUI_Text( MARGIN_LEFT, MARGIN_TOP, White, Black, "%02u-%02u-%04u", RTC_GetDay(), RTC_GetMonth(), RTC_GetYear() );
+  GUI_Text( (LCD_WIDTH - (8 * FONT_WIDTH + MARGIN_RIGHT)), MARGIN_TOP, White, Black, "%02u:%02u:%02u", RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond() );
 
   switch( StateActual )
   {
